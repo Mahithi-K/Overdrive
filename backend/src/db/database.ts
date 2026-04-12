@@ -19,9 +19,11 @@ function loadUsers() {
 
     try {
         const raw = fs.readFileSync(dbPath, 'utf8');
-        const parsed = JSON.parse(raw) as Record<string, User>;
+        const parsed = JSON.parse(raw);
         for (const key of Object.keys(parsed)) {
-            users[key] = parsed[key];
+            if (parsed[key]) {
+                users[key] = parsed[key] as User;
+            }
         }
     } catch {
         // Ignore invalid JSON and start fresh
@@ -32,12 +34,12 @@ function saveUsers() {
     fs.writeFileSync(dbPath, JSON.stringify(users, null, 2), 'utf8');
 }
 
-function ensureUser(id: string) {
+function ensureUser(id: string): User {
     if (!users[id]) {
         users[id] = { id, username: null, balance: 1000, wins: 0, total_earnings: 0 };
         saveUsers();
     }
-    return users[id];
+    return users[id]!;
 }
 
 export function initDB() {
