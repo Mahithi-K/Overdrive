@@ -304,7 +304,7 @@ function App() {
   }
 
   const myCar = race.cars.find(c => c.ownerId === userId);
-  const betPoolTotal = Object.values(race.bettingPool).flat().reduce((sum, bet) => sum + (bet.amount || 0), 0);
+  const betPoolTotal = Object.values(race.bettingPool).flat().reduce((sum, bet: any) => sum + (bet.amount || 0), 0);
   const betCount = Object.values(race.bettingPool).flat().length;
   const hoveredCar = race.cars.find(c => c.id === hoveredCarId);
   const trackColors = ['#ff4cc2', '#43ffee', '#7e6cff', '#ffd144', '#51ff7f', '#ff7b48'];
