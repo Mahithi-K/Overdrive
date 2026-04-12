@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { API_URL } from './config';
 import './App.css';
 
 interface Car {
@@ -76,7 +77,7 @@ function App() {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/leaderboard');
+      const res = await fetch(`${API_URL}/api/leaderboard`);
       if (!res.ok) return;
       const data = await res.json();
       setLeaderboard(data);
@@ -87,7 +88,7 @@ function App() {
 
   const fetchSessionData = async (session: string, user: string) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/session/${session}?user=${user}`);
+      const res = await fetch(`${API_URL}/api/session/${session}?user=${user}`);
       if (!res.ok) {
         const body = await res.json();
         const message = body.error || 'Failed to load session';
@@ -103,14 +104,14 @@ function App() {
       setUser(data.user);
       fetchLeaderboard();
     } catch (err) {
-      setError('Unable to reach backend server at localhost:3001. Make sure backend is running.');
+      setError('Unable to reach backend server. Make sure backend is deployed and running.');
     }
   };
 
   const createSocket = (): Socket => {
     if (socket) return socket;
 
-    const newSocket = io('http://localhost:3001', {
+    const newSocket = io(API_URL, {
       query: { session: sessionId, user: userId }
     });
     setSocket(newSocket);

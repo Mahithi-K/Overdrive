@@ -1,13 +1,43 @@
 import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, TextChannel, Message } from 'discord.js';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { getLeaderboard, getUser } from './db/database.js';
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
+// Session persistence file
+const sessionsPath = path.join(process.cwd(), 'sessions.json');
+
 // Map of sessionId -> { authorId, channelId, status }
 export const activeSessions = new Map<string, any>();
+
+// Load sessions from disk on startup
+function loadSessions() {
+    if (fs.existsSync(sessionsPath)) {
+        try {
+            const raw = fs.readFileSync(sessionsPath, 'utf8');
+            const parsed = JSON.parse(raw);
+            for (const [key, value] of Object.entries(parsed)) {
+                activeSessions.set(key, value);
+            }
+            console.log(`Loaded ${activeSessions.size} sessions from disk`);
+        } catch (err) {
+            console.warn('Failed to load sessions from disk:', err);
+        }
+    }
+}
+
+// Save sessions to disk
+function saveSessions() {
+    const obj: Record<string, any> = {};
+    for (const [key, value] of activeSessions.entries()) {
+        obj[key] = value;
+    }
+    fs.writeFileSync(sessionsPath, JSON.stringify(obj, null, 2), 'utf8');
+}
 
 // Flag to control whether continuous race loops should be active
 export let gameLooping = false;
@@ -54,6 +84,7 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
 
     client.on('ready', () => {
         console.log(`Logged in as ${client.user?.tag}!`);
+        loadSessions();
     });
 
     client.on('guildCreate', guild => {
@@ -105,6 +136,7 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
                 status: 'waiting',
                 loopActive: true
             });
+            saveSessions();
 
             const link = `${webUrl}?session=${sessionId}&user=${interaction.user.id}`;
             
@@ -185,6 +217,7 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
                 status: 'waiting',
                 loopActive: true
             });
+            saveSessions();
             const link = `${webUrl}?session=${sessionId}&user=${message.author.id}`;
             await message.reply(`🏎️ **A new street race loop is starting!**\n${link}\nThe race will restart automatically after each session. Use !stop to end.`);
         } else if (normalized === 'stop') {
@@ -199,6 +232,7 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
                     activeSessions.set(sessionId, sessionMeta);
                 }
             }
+            saveSessions();
             await message.reply('🛑 **Race loop stopped.** Ongoing races will finish, but no new ones will start.');
         }
     });
