@@ -7,7 +7,7 @@ export const getApiUrl = (): string => {
   
   // Production: Use your deployed Render backend URL
   // Replace with your actual Render URL
-  return 'https://overdrive-8lvv.onrender.com/';
+  return 'https://overdrive-8lvv.onrender.com';
 };
 
-export const API_URL = getApiUrl();
+export const API_URL = getApiUrl().replace(/\/$/, '');

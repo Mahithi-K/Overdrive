@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import { activeSessions, broadcastToDiscord } from './bot.js';
+import { activeSessions, broadcastToDiscord, saveSessions } from './bot.js';
 import { Race } from './game/Race.js';
 import { getUser, updateUserStats, getLeaderboard, updateUsername } from './db/database.js';
 
@@ -36,7 +36,15 @@ app.get('/api/session/:id', async (req, res) => {
             });
             console.log(`Created fallback local session: ${sessionId}`);
         } else {
-            return res.status(404).json({ error: 'Session not found. Start a session from Discord using the bot command and use the newest link.' });
+            // Create session on-demand for production
+            activeSessions.set(sessionId, {
+                authorId: userId,
+                channelId: 'discord',
+                status: 'waiting',
+                loopActive: false
+            });
+            saveSessions();
+            console.log(`Created on-demand session: ${sessionId} for user: ${userId}`);
         }
     }
 

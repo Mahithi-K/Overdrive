@@ -31,7 +31,7 @@ function loadSessions() {
 }
 
 // Save sessions to disk
-function saveSessions() {
+export function saveSessions() {
     const obj: Record<string, any> = {};
     for (const [key, value] of activeSessions.entries()) {
         obj[key] = value;

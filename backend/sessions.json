@@ -1,0 +1,20 @@
+{
+  "15daf72f-a38e-4b68-a5e0-4c971f48b048": {
+    "authorId": "1408113325941723166",
+    "channelId": "1488834593544208416",
+    "status": "waiting",
+    "loopActive": false
+  },
+  "9324d2b0-3de5-423d-a629-53a56fe9e1ea": {
+    "authorId": "1408113325941723166",
+    "channelId": "1488834593544208416",
+    "status": "waiting",
+    "loopActive": false
+  },
+  "e90e70b0-2628-4a43-96c8-bf2345c96bfd": {
+    "authorId": "1408113325941723166",
+    "channelId": "1488834593544208416",
+    "status": "waiting",
+    "loopActive": true
+  }
+}
