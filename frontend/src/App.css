@@ -1,0 +1,505 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Pacifico&display=swap');
+
+body {
+  font-family: 'Orbitron', 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 10% 10%, rgba(68, 145, 255, 0.18), transparent 23%),
+              radial-gradient(circle at 90% 15%, rgba(255, 0, 184, 0.16), transparent 20%),
+              radial-gradient(circle at 50% 90%, rgba(0, 230, 255, 0.12), transparent 18%),
+              linear-gradient(180deg, #05030b 0%, #02010a 60%, #000 100%);
+  color: #e9ecff;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 2px, transparent 16px);
+  pointer-events: none;
+  opacity: 0.32;
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  padding: 32px 24px 48px;
+}
+
+.video-background {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(254, 74, 255, 0.12), transparent 22%),
+              radial-gradient(circle at 80% 15%, rgba(10, 240, 255, 0.10), transparent 18%),
+              linear-gradient(180deg, #09060f 0%, #03020a 40%, #020009 100%);
+}
+
+.video-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 25%),
+              radial-gradient(circle at 50% 30%, rgba(255, 60, 180, 0.12), transparent 16%),
+              radial-gradient(circle at 20% 80%, rgba(0, 200, 255, 0.14), transparent 12%);
+  opacity: 0.85;
+}
+
+.video-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0%, rgba(255,255,255,0.05) 1px, transparent 2px),
+              repeating-linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 1px, transparent 2px);
+  background-size: 90px 90px;
+  opacity: 0.15;
+  animation: driftLines 12s linear infinite;
+}
+
+@keyframes driftLines {
+  from { background-position: 0 0; }
+  to { background-position: 120px 120px; }
+}
+
+.role-selection,
+.game {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 28px;
+  background: rgba(6, 8, 20, 0.92);
+  border: 1px solid rgba(89, 187, 255, 0.22);
+  border-radius: 28px;
+  box-shadow: 0 0 70px rgba(56, 145, 255, 0.14);
+}
+
+.role-selection {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.role-selection > * {
+  width: 100%;
+  max-width: 620px;
+}
+
+.hero-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.hero-panel h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  letter-spacing: 0.02em;
+  font-family: 'Open Sans', 'Pacifico', 'Orbitron', 'Arial', sans-serif;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: #b9d9ff;
+}
+
+.header-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  color: #c8d8ff;
+}
+
+.header-stats strong {
+  color: #fff;
+}
+
+.race-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.race-timer {
+  display: block;
+  margin-top: 10px;
+  color: #7ce39f;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.race-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.status-waiting { color: #7ce39f; }
+.status-starting { color: #f8d56d; }
+.status-active { color: #67d1ff; }
+.status-finished { color: #ef6cfc; }
+
+.pool-info {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  color: #b8d9ff;
+}
+
+.pool-info span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  margin: 10px 8px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #6e5bff 0%, #1de3ff 100%);
+  color: #050817;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 12px 34px rgba(30, 180, 255, 0.18);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+input,
+select {
+  margin: 10px 8px;
+  padding: 14px 18px;
+  min-width: 220px;
+  border-radius: 16px;
+  border: 1px solid rgba(140, 170, 255, 0.22);
+  background: rgba(12, 12, 33, 0.95);
+  color: #e8eeff;
+}
+
+input::placeholder,
+select {
+  color: rgba(225, 230, 255, 0.68);
+}
+
+.track {
+  position: relative;
+  width: min(520px, 100%);
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08), transparent 35%),
+              radial-gradient(circle at 50% 50%, rgba(20, 180, 255, 0.08), transparent 45%),
+              linear-gradient(180deg, rgba(9, 10, 28, 1), rgba(2, 2, 8, 1));
+  margin: 20px auto;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 0 90px rgba(26, 142, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.track::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.10);
+  box-shadow: 0 0 40px rgba(255, 80, 200, 0.1);
+}
+
+.track::after {
+  content: '';
+  position: absolute;
+  inset: 35%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
+}
+
+.car-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.22);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.car-tooltip {
+  margin: 0 auto 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(8, 10, 25, 0.92);
+  border: 1px solid rgba(255, 120, 190, 0.25);
+  color: #f8f9ff;
+  box-shadow: 0 0 30px rgba(255, 75, 180, 0.18);
+}
+
+.controls,
+.bet-controls {
+  margin: 20px auto;
+  padding: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.controls {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.controls-top {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ability-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ability-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(10, 12, 28, 0.96);
+  color: #e9ecff;
+  padding: 12px 18px;
+  border-radius: 18px;
+  min-width: 130px;
+  font-weight: 700;
+  transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ability-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(80, 220, 255, 0.24);
+}
+
+.ability-btn:disabled,
+.ability-btn.expired {
+  opacity: 0.42;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ability-btn.active {
+  box-shadow: 0 0 24px rgba(132, 255, 104, 0.36);
+}
+
+.collide-target-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.collide-target-row label {
+  color: #bfdcff;
+  min-width: 80px;
+}
+
+.collide-target-row select {
+  min-width: 200px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(138, 197, 255, 0.18);
+  background: rgba(8, 10, 24, 0.9);
+  color: #fff;
+}
+
+.bet-controls {
+  background: rgba(10, 12, 28, 0.92);
+  border: 1px solid rgba(60, 140, 255, 0.18);
+  border-radius: 22px;
+}
+
+.bet-controls h2 {
+  width: 100%;
+  margin: 0 0 10px;
+  text-align: center;
+}
+
+.bet-summary {
+  color: #d4f4ff;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.ability-message,
+.bet-note {
+  margin-top: 12px;
+  color: #c8e8ff;
+  font-size: 0.95rem;
+}
+
+.ability-message {
+  background: rgba(12, 18, 42, 0.95);
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(138, 197, 255, 0.18);
+}
+
+.bet-note {
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.start-race-button {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.status-panels {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.user-info div {
+  color: #c8e8ff;
+}
+
+.neon-card {
+  min-width: 240px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px 24px;
+  background: rgba(9, 11, 25, 0.92);
+  border: 1px solid rgba(83, 232, 255, 0.22);
+  border-radius: 26px;
+  box-shadow: 0 0 50px rgba(64, 187, 255, 0.12);
+  text-align: left;
+}
+
+.neon-card h3 {
+  margin-top: 0;
+  color: #d9f0ff;
+}
+
+.leaderboard-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.95rem;
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bet-winners,
+.post-race-options {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(10, 8, 30, 0.94);
+  border: 1px solid rgba(255, 85, 255, 0.25);
+  border-radius: 22px;
+}
+
+.post-race-options p {
+  margin-bottom: 16px;
+  color: #d8dfff;
+}
+
+.post-race-options button {
+  margin: 6px;
+}
+
+.role-note {
+  display: block;
+  font-size: 0.95rem;
+  color: #a8c0ff;
+  margin-top: 12px;
+}
+
+.error {
+  color: #ff8cc9;
+}
+
+@media (max-width: 760px) {
+  .hero-panel,
+  .race-header,
+  .pool-info {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+  }
+
+  .leaderboard-row span:last-child {
+    text-align: right;
+  }
+}
