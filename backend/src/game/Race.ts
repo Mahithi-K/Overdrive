@@ -128,9 +128,12 @@ export class Race {
 
         this.cars.forEach(car => {
             car.tick(deltaTimeMs);
+            if (car.position >= this.trackLength) {
+                raceFinished = true;
+            }
         });
 
-        if (Date.now() - this.startTime >= this.raceDurationMs) {
+        if (!raceFinished && Date.now() - this.startTime >= this.raceDurationMs) {
             raceFinished = true;
         }
 

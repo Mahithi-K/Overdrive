@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import { activeSessions, broadcastToDiscord, saveSessions } from './bot.js';
 import { Race } from './game/Race.js';
-import { getUser, updateUserStats, getLeaderboard, updateUsername } from './db/database.js';
+import { getUser, updateUserStats, getLeaderboard, updateUsername, purchaseAbility, consumeAbility } from './db/database.js';
 
 export const app = express();
 export const server = http.createServer(app);
@@ -60,6 +60,18 @@ app.get('/api/session/:id', async (req, res) => {
 app.get('/api/leaderboard', (req, res) => {
     const rows = getLeaderboard();
     res.json(rows);
+});
+
+app.post('/api/shop/buy', (req, res) => {
+    const { userId, ability } = req.body as { userId: string; ability: 'nitro' | 'risk' | 'shield' | 'collide' };
+    if (!userId || !ability) {
+        return res.status(400).json({ success: false, message: 'Missing userId or ability.' });
+    }
+    const result = purchaseAbility(userId, ability);
+    if (!result.success) {
+        return res.status(400).json(result);
+    }
+    return res.json(result);
 });
 
 io.on('connection', (socket) => {
@@ -121,13 +133,26 @@ io.on('connection', (socket) => {
             const ability = typeof payload === 'string' ? payload : payload?.ability;
             const targetId = typeof payload === 'object' ? payload?.targetId : undefined;
             if (!ability) return;
+
+            const user = getUser(userId);
+            if (!user.abilities[ability as keyof typeof user.abilities] || user.abilities[ability as keyof typeof user.abilities] <= 0) {
+                socket.emit('error_message', 'You need to buy this ability in the shop before using it.');
+                return;
+            }
+
             const result = race.useAbility(userId, ability, targetId);
             if (result) {
                 if (!result.success) {
                     socket.emit('error_message', result.message);
                 } else {
+                    const consumeResult = consumeAbility(userId, ability as 'nitro' | 'risk' | 'shield' | 'collide');
+                    if (!consumeResult.success) {
+                        socket.emit('error_message', consumeResult.message);
+                        return;
+                    }
                     io.to(sessionId).emit('race_updated', race);
                     socket.emit('ability_feedback', result.message);
+                    socket.emit('user_updated', consumeResult.user);
                 }
             }
         }

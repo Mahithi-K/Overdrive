@@ -1,0 +1,16 @@
+{
+  "test": {
+    "id": "test",
+    "username": "mahi",
+    "balance": 1500,
+    "wins": 1,
+    "total_earnings": 500
+  },
+  "1408113325941723166": {
+    "id": "1408113325941723166",
+    "username": null,
+    "balance": 1000,
+    "wins": 0,
+    "total_earnings": 0
+  }
+}

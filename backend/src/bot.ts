@@ -5,7 +5,7 @@ import path from 'path';
 import { getLeaderboard, getUser } from './db/database.js';
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
 // Session persistence file
@@ -47,7 +47,13 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
     const commands = [
         new SlashCommandBuilder()
             .setName('race')
-            .setDescription('Start a new interactive street race session!'),
+            .setDescription('Start a new interactive street race session or get race details.')
+            .addStringOption(option =>
+                option.setName('action')
+                    .setDescription('Use "help" to get race instructions instead of starting a race')
+                    .setRequired(false)
+                    .addChoices({ name: 'help', value: 'help' })
+            ),
         new SlashCommandBuilder()
             .setName('stop')
             .setDescription('Stop the current race session loop'),
@@ -101,24 +107,45 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
         }
     });
 
+    client.on('guildMemberAdd', member => {
+        const defaultChannel = member.guild.systemChannel;
+        if (!defaultChannel || !defaultChannel.isTextBased()) return;
+        defaultChannel.send(`🎉 Welcome ${member.user.username} to ${member.guild.name}!` +
+            `
+Use /race to start a new game, /help to see commands, or !race help for quick game details.`);
+    });
+
     client.on('interactionCreate', async interaction => {
         if (!interaction.isChatInputCommand()) return;
 
         const replyHelp = async () => {
             await interaction.reply({
-                content: '🏁 **Neon Race Bot Commands**\n' +
+                content: '🏁 **Neon Race Bot Help**\n' +
                     '`/race` - Start a new street race session\n' +
+                    '`/race action: help` - Show game details and race instructions\n' +
                     '`/stop` - Stop the active race loop\n' +
                     '`/ping` - Check bot latency\n' +
                     '`/leaderboard` - Show top server racers\n' +
                     '`/stats` - Show your race stats\n' +
                     '`/help` - Show this help message\n' +
-                    '\nUse `!race`, `!stop`, `!ping`, `!leaderboard`, `!stats`, or `!help` as prefix commands too.',
+                    '\n**Game overview:**\n' +
+                    '• Start a race with `/race`. A race link is generated for your server.\n' +
+                    '• Join as Racer, Bettor, or Viewer from the web page.\n' +
+                    '• New users start with 1 of each ability and can buy more in the shop.\n' +
+                    '• Use abilities during the race to gain an advantage or disrupt opponents.\n' +
+                    '• The race ends when somebody reaches the finish line or after 3 minutes.\n' +
+                    '\nUse `!race help` for the same help via text commands.',
                 ephemeral: true
             });
         };
 
         if (interaction.commandName === 'race') {
+            const action = interaction.options.getString('action');
+            if (action === 'help') {
+                await replyHelp();
+                return;
+            }
+
             if (gameLooping) {
                 await interaction.reply({
                     content: '🏎️ **A race loop is already running!** Use `/stop` to end it.',
@@ -204,6 +231,17 @@ export async function initBot(token: string, clientId: string, webUrl: string) {
             const stats = getUser(message.author.id) as { username?: string | null; balance: number; wins: number; total_earnings: number };
             await message.reply(`📊 **Your Stats**\nUsername: ${stats.username || message.author.username}\nBalance: $${stats.balance}\nWins: ${stats.wins}\nTotal earnings: $${stats.total_earnings}`);
         } else if (normalized === 'race') {
+            if (args[0] && args[0].toLowerCase() === 'help') {
+                await message.reply('🏁 **Neon Race Bot Help**\n' +
+                    '!race - Start a new street race session\n' +
+                    '!race help - Show game instructions\n' +
+                    '!stop - Stop the active race loop\n' +
+                    '!ping - Check bot latency\n' +
+                    '!leaderboard - Show top server racers\n' +
+                    '!stats - Show your race stats\n' +
+                    '\n**Game overview:** New users start with 1 of each ability and can buy more in the web shop. Use abilities during the race to gain an edge or slow opponents. The race ends when someone wins or after 3 minutes.');
+                return;
+            }
             if (gameLooping) {
                 await message.reply('🏎️ **A race loop is already running!** Use !stop to end it.');
                 return;

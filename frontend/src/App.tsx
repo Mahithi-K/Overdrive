@@ -33,12 +33,20 @@ interface Race {
   bettingPool: Record<string, any[]>;
 }
 
+interface AbilityInventory {
+  nitro: number;
+  risk: number;
+  shield: number;
+  collide: number;
+}
+
 interface User {
   id: string;
   username?: string | null;
   balance: number;
   wins: number;
   total_earnings: number;
+  abilities: AbilityInventory;
 }
 
 function App() {
@@ -48,6 +56,7 @@ function App() {
   const [race, setRace] = useState<Race | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<'racer' | 'bettor' | 'viewer' | null>(null);
+  const [shopMessage, setShopMessage] = useState('');
   const [username, setUsername] = useState('');
   const [bettorName, setBettorName] = useState('');
   const [betAmount, setBetAmount] = useState(100);
@@ -206,6 +215,11 @@ function App() {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatAbilityDuration = (ms: number) => {
+    const seconds = Math.max(0, Math.ceil(ms / 1000));
+    return `${seconds}s`;
+  };
+
   const joinAsRacer = async () => {
     if (!username) {
       setError('Please enter a username to join as a racer.');
@@ -244,6 +258,30 @@ function App() {
     s.emit('place_bet', { amount: betAmount, carId: selectedCar, bettorName: bettorName || `Bettor` });
     setBetPlaced(true);
     setRole('bettor');
+  };
+
+  const buyAbility = async (ability: 'nitro' | 'risk' | 'shield' | 'collide') => {
+    setShopMessage('');
+    if (!userId) {
+      setShopMessage('Unable to identify user for purchase.');
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/api/shop/buy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, ability })
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setShopMessage(body.message || 'Purchase failed.');
+        return;
+      }
+      setUser(body.user);
+      setShopMessage(`Purchased ${ability} for $200.`);
+    } catch (err) {
+      setShopMessage('Unable to complete purchase. Try again later.');
+    }
   };
 
   const startRace = () => {
@@ -291,6 +329,24 @@ function App() {
       <div className="role-selection">
         <h1>Street Racing Game</h1>
         <p>Choose your role:</p>
+        <div className="shop-panel neon-card">
+          <h2>Ability Shop</h2>
+          <p>Each ability costs <strong>$200</strong>.</p>
+          {user && (
+            <div className="shop-items">
+              {['nitro', 'risk', 'shield', 'collide'].map((ability) => (
+                <div key={ability} className="shop-item">
+                  <span>{ability.charAt(0).toUpperCase() + ability.slice(1)}</span>
+                  <span>Owned: {user.abilities[ability as keyof typeof user.abilities]}</span>
+                  <button onClick={() => buyAbility(ability as 'nitro' | 'risk' | 'shield' | 'collide')}
+                    disabled={user.balance < 200}>
+                    Buy</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {shopMessage && <p className="shop-message">{shopMessage}</p>}
+        </div>
         <button onClick={() => { createSocket(); setRole('viewer'); }}>Viewer</button>
         <div>
           <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
@@ -373,10 +429,10 @@ function App() {
           <div className="controls-top">
             <h2>Racer Abilities</h2>
             <div className="ability-action-row">
-              <button className={`ability-btn ${myCar?.nitroUsed ? (myCar.nitroBoostRemaining > 0 ? 'active' : 'expired') : ''}`} onClick={() => useAbility('nitro')} disabled={race.status !== 'active' || !myCar || myCar.nitroUsed}>Nitro Boost</button>
-              <button className={`ability-btn ${myCar?.riskUsed ? (myCar.riskShaftRemaining > 0 ? 'active' : 'expired') : ''}`} onClick={() => useAbility('risk')} disabled={race.status !== 'active' || !myCar || myCar.riskUsed}>Risk Shaft</button>
-              <button className={`ability-btn ${myCar?.shieldUsed ? (myCar.shieldRemaining > 0 ? 'active' : 'expired') : ''}`} onClick={() => useAbility('shield')} disabled={race.status !== 'active' || !myCar || myCar.shieldUsed}>Safety Shield</button>
-              <button className={`ability-btn ${myCar?.collideUsed ? 'expired' : ''}`} onClick={() => useAbility('collide', collideTarget)} disabled={race.status !== 'active' || !myCar || myCar.collideUsed}>Collide</button>
+              <button className={`ability-btn ${myCar?.nitroUsed ? (myCar.nitroBoostRemaining > 0 ? 'active' : 'expired') : ''}`} onClick={() => useAbility('nitro')} disabled={race.status !== 'active' || !myCar || myCar.nitroUsed || (user?.abilities.nitro ?? 0) <= 0}>Nitro Boost ({user?.abilities.nitro ?? 0})</button>
+              <button className={`ability-btn ${myCar?.riskUsed ? (myCar.riskShaftRemaining > 0 ? 'active' : 'expired') : ''}`} onClick={() => useAbility('risk')} disabled={race.status !== 'active' || !myCar || myCar.riskUsed || (user?.abilities.risk ?? 0) <= 0}>Risk Shaft ({user?.abilities.risk ?? 0})</button>
+              <button className={`ability-btn ${myCar?.shieldUsed ? (myCar.shieldRemaining > 0 ? 'active' : 'expired') : ''}`} onClick={() => useAbility('shield')} disabled={race.status !== 'active' || !myCar || myCar.shieldUsed || (user?.abilities.shield ?? 0) <= 0}>Safety Shield ({user?.abilities.shield ?? 0})</button>
+              <button className={`ability-btn ${myCar?.collideUsed ? 'expired' : ''}`} onClick={() => useAbility('collide', collideTarget)} disabled={race.status !== 'active' || !myCar || myCar.collideUsed || (user?.abilities.collide ?? 0) <= 0}>Collide ({user?.abilities.collide ?? 0})</button>
             </div>
           </div>
           {myCar ? (
@@ -392,6 +448,13 @@ function App() {
                   </select>
                 </div>
               )}
+              <div className="ability-cooldown-row">
+                {myCar.nitroBoostRemaining > 0 && <span className="ability-status">Nitro active: {formatAbilityDuration(myCar.nitroBoostRemaining)}</span>}
+                {myCar.riskShaftRemaining > 0 && <span className="ability-status">Risk Shaft active: {formatAbilityDuration(myCar.riskShaftRemaining)}</span>}
+                {myCar.shieldRemaining > 0 && <span className="ability-status">Safety Shield active: {formatAbilityDuration(myCar.shieldRemaining)}</span>}
+                {myCar.collideUsed && !myCar.speedPenaltyRemaining && <span className="ability-status">Collide used</span>}
+                {myCar.speedPenaltyRemaining > 0 && <span className="ability-status">Speed penalty: {formatAbilityDuration(myCar.speedPenaltyRemaining)}</span>}
+              </div>
               {race.status !== 'active' && <div className="ability-message">Abilities unlock once the race goes active.</div>}
             </>
           ) : (
